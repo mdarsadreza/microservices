@@ -1,0 +1,48 @@
+resilience4j:
+  circuitbreaker:
+    instances:
+      globalCircuitBreaker:
+        slidingWindowSize: 10
+        failureRateThreshold: 50
+        waitDurationInOpenState: 5000ms
+        permittedNumberOfCallsInHalfOpenState: 3
+        minimumNumberOfCalls: 5
+        automaticTransitionFromOpenToHalfOpenEnabled: true
+
+feign:
+  client:
+    config:
+      default:
+        connectTimeout: 5000
+        readTimeout: 5000
+
+spring:
+  security:
+    csrf:
+      enabled: false
+  main:
+    web-application-type: reactive
+    allow-bean-definition-overriding: true
+  application:
+    name: ApiGateway
+  cloud:
+    circuitbreaker:
+      resilience4j:
+        enabled: true
+    gateway:
+      routes:
+        - id: employee-service-auth
+          uri: http://localhost:8082
+          predicates:
+            - Path=/apis/**
+          filters:
+            - AddRequestHeader=Host, localhost:8082
+            - PreserveHostHeader=true
+
+server:
+  port: 8081
+
+logging:
+  level:
+    org.springframework.web: DEBUG
+    org.springframework.security: TRACE
